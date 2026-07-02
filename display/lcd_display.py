@@ -110,12 +110,13 @@ def show():
 
 
 def check_buttons():
-    for name, attr in [("left", lcd.left_button), ("right", lcd.right_button),
-                       ("up", lcd.up_button), ("down", lcd.down_button),
-                       ("select", lcd.select_button)]:
-        if attr:
+    buttons = [("left", lambda: lcd.left_button), ("right", lambda: lcd.right_button),
+               ("up", lambda: lcd.up_button), ("down", lambda: lcd.down_button),
+               ("select", lambda: lcd.select_button)]
+    for name, getter in buttons:
+        if getter():
             time.sleep(0.03)
-            if attr:
+            if getter():
                 return name
     return None
 

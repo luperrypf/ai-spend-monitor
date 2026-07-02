@@ -76,9 +76,9 @@ def make_periods():
     }
 
 def aggregate(entries):
-    today = date.today()  # JST
+    today = (datetime.utcnow() + timedelta(hours=9)).date()  # JST (UTC+9)
     cutoff = today - timedelta(days=30)
-    result = {"updated": datetime.now().isoformat(), "providers": {}}
+    result = {"updated": datetime.utcnow().isoformat() + "Z", "providers": {}}
     for p in ALL_PROVIDERS:
         if p != "all":
             result["providers"][p] = make_periods()
@@ -94,8 +94,11 @@ def aggregate(entries):
         if spend < 0:
             continue
 
-        provider = get_provider(model)
-        savings = calc_savings(model, pt, ct, spend)
+        try:
+            provider = get_provider(model)
+            savings = calc_savings(model, pt, ct, spend)
+        except (ValueError, TypeError):
+            continue
 
         ts_str = entry.get("startTime") or entry.get("created_at") or ""
         entry_date = None
@@ -144,10 +147,10 @@ if __name__ == "__main__":
         sys.exit(1)
 
     data = aggregate(entries)
-    output_path = sys.argv[1] if len(sys.argv) > 1 else "/opt/hermes/ai-spend.json"
+    output_path = sys.argv[1] if len(sys.argv) > 1 else "/opt/hermes/public/ai-spend.json"
 
     # Atomic write: write to tmp then rename
-    tmp_path = output_path + ".tmp"
+    tmp_path = f"{output_path}.{os.getpid()}.tmp"
     with open(tmp_path, "w") as f:
         json.dump(data, f, indent=2)
     os.rename(tmp_path, output_path)

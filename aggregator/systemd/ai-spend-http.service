@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 ExecStart=/usr/bin/python3 -m http.server 9876 --bind 0.0.0.0
-WorkingDirectory=/opt/hermes
+WorkingDirectory=/opt/hermes/public
 Restart=always
 RestartSec=5
 
