@@ -2,7 +2,7 @@
 """Aggregate LiteLLM spend by provider and date. Output JSON for Pi display.
 Includes cache savings calculation: what we'd pay at full price vs actual spend."""
 import json, urllib.request, sys, os
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 
 LITELLM_KEY_PATH = "/opt/hermes/.litellm_key"
 LITELLM_API_URL = "http://192.168.68.205:4000/spend/logs"
@@ -76,9 +76,9 @@ def make_periods():
     }
 
 def aggregate(entries):
-    today = (datetime.utcnow() + timedelta(hours=9)).date()  # JST (UTC+9)
+    today = (datetime.now(timezone.utc) + timedelta(hours=9)).date()  # JST (UTC+9)
     cutoff = today - timedelta(days=30)
-    result = {"updated": datetime.utcnow().isoformat() + "Z", "providers": {}}
+    result = {"updated": datetime.now(timezone.utc).isoformat() + "Z", "providers": {}}
     for p in ALL_PROVIDERS:
         if p != "all":
             result["providers"][p] = make_periods()
